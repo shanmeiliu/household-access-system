@@ -1,0 +1,1 @@
+-- Represents the existing legacy Profile schema with the overloaded login_id.
