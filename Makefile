@@ -1,5 +1,5 @@
 DB_NAME ?= household_access
-DB_USER ?= postgres
+DB_USER ?= rag_user#postgres
 
 # Default: use the PostgreSQL service defined in docker-compose.yml.
 #
@@ -9,7 +9,8 @@ DB_EXEC ?= docker compose exec -T postgres
 DB_EXEC_IT ?= docker compose exec postgres
 
 .PHONY: fmt test vet build run check \
-	db-up db-down db-psql db-legacy db-verify-legacy
+	db-up db-down db-psql db-legacy db-verify-legacy \
+	db-new-schema db-verify-new-schema db-test-new-schema-constraints
 
 fmt:
 	go fmt ./...
@@ -47,3 +48,18 @@ db-verify-legacy:
 	$(DB_EXEC) \
 		psql -v ON_ERROR_STOP=1 -U $(DB_USER) -d $(DB_NAME) \
 		< scripts/verify-legacy.sql
+
+db-new-schema:
+	$(DB_EXEC) \
+		psql -v ON_ERROR_STOP=1 -U $(DB_USER) -d $(DB_NAME) \
+		< migrations/002_new_schema.sql
+
+db-verify-new-schema:
+	$(DB_EXEC) \
+		psql -v ON_ERROR_STOP=1 -U $(DB_USER) -d $(DB_NAME) \
+		< scripts/verify-new-schema.sql
+
+db-test-new-schema-constraints:
+	$(DB_EXEC) \
+		psql -v ON_ERROR_STOP=1 -U $(DB_USER) -d $(DB_NAME) \
+		< scripts/test-new-schema-constraints.sql

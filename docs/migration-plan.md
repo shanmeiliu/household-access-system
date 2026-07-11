@@ -15,6 +15,12 @@ Objective: add the new model without changing production behavior.
 Database changes:
 
 - create nullable `login_accounts`, `households`, and `household_memberships` structures
+- `002_new_schema.sql` implements empty `login_accounts`, `households`, and `household_memberships` tables
+- add safe foreign keys and check constraints for the expanded model
+- enforce at most one active membership per profile
+- enforce at most one active owner per household
+- do not add the exactly-one-owner trigger until after backfill and validation
+- do not backfill legacy rows or switch authorization behavior
 - add indexes needed for backfill and reconciliation
 - add nullable foreign-key columns and, where appropriate, add foreign-key constraints using `NOT VALID`, then validate them after backfill
 - avoid request-path table rewrites

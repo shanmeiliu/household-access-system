@@ -312,28 +312,42 @@ Default standalone project database:
 ```bash
 make db-up
 make db-legacy
+make db-new-schema
 make db-verify-legacy
+make db-verify-new-schema
+make db-test-new-schema-constraints
 ```
 
 Existing PostgreSQL container example:
 
 ```bash
-make db-legacy DB_CONTAINER=postgres DB_NAME=household_access
-make db-verify-legacy DB_CONTAINER=postgres DB_NAME=household_access
 make db-legacy \
-  DB_EXEC="docker exec -i another-postgres" \
+  DB_EXEC="docker exec -i existing-postgres" \
   DB_NAME=household_access \
   DB_USER=postgres
-make db-legacy \
-  DB_EXEC="docker exec -i existing-postgres"
-
+make db-new-schema \
+  DB_EXEC="docker exec -i existing-postgres" \
+  DB_NAME=household_access \
+  DB_USER=postgres
 make db-verify-legacy \
-  DB_EXEC="docker exec -i existing-postgres"
+  DB_EXEC="docker exec -i existing-postgres" \
+  DB_NAME=household_access \
+  DB_USER=postgres
+make db-verify-new-schema \
+  DB_EXEC="docker exec -i existing-postgres" \
+  DB_NAME=household_access \
+  DB_USER=postgres
+make db-test-new-schema-constraints \
+  DB_EXEC="docker exec -i existing-postgres" \
+  DB_NAME=household_access \
+  DB_USER=postgres
 ```
 
 The Docker Compose file starts a dedicated PostgreSQL 16 database named `household_access` with username `postgres` and password `postgres`. Local development may reuse an existing PostgreSQL server or container, but this project should still use a dedicated database named `household_access`.
 
 The same PostgreSQL instance may host multiple isolated databases. These tables should not be placed inside an unrelated RAG, e-commerce, or other application database. No application database logic is implemented yet.
+
+`001_legacy_schema.sql` creates the current legacy fixture. `002_new_schema.sql` expands the database with empty new-model tables for `login_accounts`, `households`, and `household_memberships`. No legacy rows have been backfilled yet, and the application would still use the legacy authorization model at this phase. The new-schema constraint test runs inside a transaction and rolls back, leaving no test rows behind.
 
 ## Design Status
 
