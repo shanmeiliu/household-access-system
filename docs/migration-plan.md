@@ -2,6 +2,12 @@
 
 The migration uses an expand-and-contract approach. Unexplained new-model access must never be broader than legacy access. Intentional authorization expansions must be explicitly modeled, reviewed, tested, and enabled through controlled rollout. Ambiguous legacy records should be routed to an exception table or migration review queue rather than guessed.
 
+## Legacy Data Baseline
+
+The executable legacy fixture in `migrations/001_legacy_schema.sql` includes shared login-based households, profiles with no login, owners without login, members unable to have independent credentials, and ambiguous text owner names.
+
+These fixtures will later be used to validate backfill behavior, authorization comparison, and exception handling before the new model becomes authoritative.
+
 ## Expand
 
 Objective: add the new model without changing production behavior.

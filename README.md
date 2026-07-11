@@ -284,7 +284,7 @@ household-access-system/
 ├── internal/household/      # future household handlers, services, repositories
 ├── internal/profile/        # future profile handlers, services, repositories
 ├── internal/db/             # future PostgreSQL setup
-├── migrations/              # future executable SQL migrations
+├── migrations/              # SQL migrations; 001_legacy_schema.sql creates the executable legacy model and representative problematic data
 ├── docs/                    # detailed design notes
 └── tests/                   # future test documentation and fixtures
 ```
@@ -293,7 +293,7 @@ household-access-system/
 
 Later steps will add:
 
-- executable PostgreSQL migrations
+- executable PostgreSQL migrations beyond the legacy fixture
 - Go domain types
 - PostgreSQL repositories
 - centralized authorization service
@@ -305,12 +305,33 @@ Later steps will add:
 
 ```bash
 make check
-docker compose up -d
-docker compose ps
-docker compose down
 ```
 
-The Docker Compose file starts a dedicated PostgreSQL 16 database named `household_access` with username `postgres` and password `postgres`. Local development may reuse an existing PostgreSQL server or container, but this project should use a dedicated database named `household_access`.
+Default standalone project database:
+
+```bash
+make db-up
+make db-legacy
+make db-verify-legacy
+```
+
+Existing PostgreSQL container example:
+
+```bash
+make db-legacy DB_CONTAINER=postgres DB_NAME=household_access
+make db-verify-legacy DB_CONTAINER=postgres DB_NAME=household_access
+make db-legacy \
+  DB_EXEC="docker exec -i another-postgres" \
+  DB_NAME=household_access \
+  DB_USER=postgres
+make db-legacy \
+  DB_EXEC="docker exec -i existing-postgres"
+
+make db-verify-legacy \
+  DB_EXEC="docker exec -i existing-postgres"
+```
+
+The Docker Compose file starts a dedicated PostgreSQL 16 database named `household_access` with username `postgres` and password `postgres`. Local development may reuse an existing PostgreSQL server or container, but this project should still use a dedicated database named `household_access`.
 
 The same PostgreSQL instance may host multiple isolated databases. These tables should not be placed inside an unrelated RAG, e-commerce, or other application database. No application database logic is implemented yet.
 

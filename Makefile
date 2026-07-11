@@ -1,4 +1,15 @@
-.PHONY: fmt test vet build run check
+DB_NAME ?= household_access
+DB_USER ?= postgres
+
+# Default: use the PostgreSQL service defined in docker-compose.yml.
+#
+# To reuse an existing container:
+# make db-legacy DB_EXEC="docker exec -i my-postgres"
+DB_EXEC ?= docker compose exec -T postgres
+DB_EXEC_IT ?= docker compose exec postgres
+
+.PHONY: fmt test vet build run check \
+	db-up db-down db-psql db-legacy db-verify-legacy
 
 fmt:
 	go fmt ./...
@@ -16,3 +27,23 @@ run:
 	go run ./cmd/api
 
 check: fmt test vet build
+
+db-up:
+	docker compose up -d
+
+db-down:
+	docker compose down
+
+db-psql:
+	$(DB_EXEC_IT) \
+		psql -U $(DB_USER) -d $(DB_NAME)
+
+db-legacy:
+	$(DB_EXEC) \
+		psql -v ON_ERROR_STOP=1 -U $(DB_USER) -d $(DB_NAME) \
+		< migrations/001_legacy_schema.sql
+
+db-verify-legacy:
+	$(DB_EXEC) \
+		psql -v ON_ERROR_STOP=1 -U $(DB_USER) -d $(DB_NAME) \
+		< scripts/verify-legacy.sql
