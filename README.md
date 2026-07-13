@@ -439,6 +439,7 @@ make api-run
 ```bash
 curl http://localhost:8080/health
 curl http://localhost:8080/ready
+curl http://localhost:8080/logins/<login-id>/manageable-profiles
 ```
 
 Expected liveness response:
@@ -454,6 +455,14 @@ Expected readiness response:
 ```
 
 `/health` checks process liveness and does not query the database. `/ready` checks PostgreSQL connectivity.
+
+To find a demo login ID after running the migrations and backfill:
+
+```bash
+make db-list-demo-logins
+```
+
+`GET /logins/<login-id>/manageable-profiles` derives household scope from the login account. It does not accept household scope from the client, uses only the new model, and excludes disabled logins, archived households, removed memberships, and archived profiles. Missing or ineligible logins return `404` to avoid exposing authorization details. Authentication middleware is not implemented yet.
 
 ## Design Status
 

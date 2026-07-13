@@ -1,5 +1,5 @@
 DB_NAME ?= household_access
-DB_USER ?= postgres
+DB_USER ?= rag_user #postgres
 
 # Default: use the PostgreSQL service defined in docker-compose.yml.
 #
@@ -12,7 +12,8 @@ DB_EXEC_IT ?= docker compose exec postgres
 	db-up db-down db-psql db-legacy db-verify-legacy \
 	db-new-schema db-verify-new-schema db-test-new-schema-constraints \
 	db-backfill db-verify-backfill db-check-backfill-idempotency \
-	db-final-constraints db-verify-final-constraints db-test-final-constraints
+	db-final-constraints db-verify-final-constraints db-test-final-constraints \
+	db-list-demo-logins
 
 fmt:
 	go fmt ./...
@@ -101,3 +102,8 @@ db-test-final-constraints:
 	$(DB_EXEC) \
 		psql -v ON_ERROR_STOP=1 -U $(DB_USER) -d $(DB_NAME) \
 		< scripts/test-final-constraints.sql
+
+db-list-demo-logins:
+	$(DB_EXEC) \
+		psql -v ON_ERROR_STOP=1 -U $(DB_USER) -d $(DB_NAME) \
+		< scripts/list-demo-login-ids.sql

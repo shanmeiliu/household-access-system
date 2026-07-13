@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/shanmeiliu/household-access-system/internal/auth"
 	"github.com/shanmeiliu/household-access-system/internal/config"
 	"github.com/shanmeiliu/household-access-system/internal/db"
 	"github.com/shanmeiliu/household-access-system/internal/httpapi"
@@ -43,7 +44,9 @@ func run(logger *slog.Logger) error {
 	}
 	defer database.Close()
 
-	server := httpapi.NewServer(cfg.HTTPAddress, database, logger)
+	authRepository := auth.NewPostgresRepository(database)
+	authService := auth.NewService(authRepository)
+	server := httpapi.NewServer(cfg.HTTPAddress, database, authService, logger)
 	serverErrors := make(chan error, 1)
 
 	go func() {
