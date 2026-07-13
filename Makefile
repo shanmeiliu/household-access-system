@@ -11,7 +11,8 @@ DB_EXEC_IT ?= docker compose exec postgres
 .PHONY: fmt test vet build run check \
 	db-up db-down db-psql db-legacy db-verify-legacy \
 	db-new-schema db-verify-new-schema db-test-new-schema-constraints \
-	db-backfill db-verify-backfill db-check-backfill-idempotency
+	db-backfill db-verify-backfill db-check-backfill-idempotency \
+	db-final-constraints db-verify-final-constraints db-test-final-constraints
 
 fmt:
 	go fmt ./...
@@ -79,3 +80,18 @@ db-check-backfill-idempotency:
 	$(DB_EXEC) \
 		psql -v ON_ERROR_STOP=1 -U $(DB_USER) -d $(DB_NAME) \
 		< scripts/test-backfill-idempotency.sql
+
+db-final-constraints:
+	$(DB_EXEC) \
+		psql -v ON_ERROR_STOP=1 -U $(DB_USER) -d $(DB_NAME) \
+		< migrations/004_constraints.sql
+
+db-verify-final-constraints:
+	$(DB_EXEC) \
+		psql -v ON_ERROR_STOP=1 -U $(DB_USER) -d $(DB_NAME) \
+		< scripts/verify-final-constraints.sql
+
+db-test-final-constraints:
+	$(DB_EXEC) \
+		psql -v ON_ERROR_STOP=1 -U $(DB_USER) -d $(DB_NAME) \
+		< scripts/test-final-constraints.sql

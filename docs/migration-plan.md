@@ -193,6 +193,13 @@ Database changes:
 - add a unique constraint on `login_accounts(profile_id)`
 - add partial unique indexes for active membership rules
 - introduce deferred validation or constraint triggers for exactly-one-owner semantics
+- `004_constraints.sql` refuses to install when active-household ownership data is invalid
+- validate that no archived household has active memberships
+- validate that archived profiles have no active memberships
+- add deferred exactly-one-owner constraint triggers
+- add deferred lifecycle constraint triggers for archived households and profiles
+- permit transactional owner transfer through deferred final-state validation
+- preserve legacy fields and rollback capability
 
 PostgreSQL concurrent index creation must run outside a transaction and should be deployed as a separate operational migration step.
 
