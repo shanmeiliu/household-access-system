@@ -313,9 +313,12 @@ Default standalone project database:
 make db-up
 make db-legacy
 make db-new-schema
+make db-backfill
 make db-verify-legacy
 make db-verify-new-schema
+make db-verify-backfill
 make db-test-new-schema-constraints
+make db-check-backfill-idempotency
 ```
 
 Existing PostgreSQL container example:
@@ -329,6 +332,10 @@ make db-new-schema \
   DB_EXEC="docker exec -i existing-postgres" \
   DB_NAME=household_access \
   DB_USER=postgres
+make db-backfill \
+  DB_EXEC="docker exec -i existing-postgres" \
+  DB_NAME=household_access \
+  DB_USER=postgres
 make db-verify-legacy \
   DB_EXEC="docker exec -i existing-postgres" \
   DB_NAME=household_access \
@@ -337,7 +344,15 @@ make db-verify-new-schema \
   DB_EXEC="docker exec -i existing-postgres" \
   DB_NAME=household_access \
   DB_USER=postgres
+make db-verify-backfill \
+  DB_EXEC="docker exec -i existing-postgres" \
+  DB_NAME=household_access \
+  DB_USER=postgres
 make db-test-new-schema-constraints \
+  DB_EXEC="docker exec -i existing-postgres" \
+  DB_NAME=household_access \
+  DB_USER=postgres
+make db-check-backfill-idempotency \
   DB_EXEC="docker exec -i existing-postgres" \
   DB_NAME=household_access \
   DB_USER=postgres
@@ -348,6 +363,17 @@ The Docker Compose file starts a dedicated PostgreSQL 16 database named `househo
 The same PostgreSQL instance may host multiple isolated databases. These tables should not be placed inside an unrelated RAG, e-commerce, or other application database. No application database logic is implemented yet.
 
 `001_legacy_schema.sql` creates the current legacy fixture. `002_new_schema.sql` expands the database with empty new-model tables for `login_accounts`, `households`, and `household_memberships`. No legacy rows have been backfilled yet, and the application would still use the legacy authorization model at this phase. The new-schema constraint test runs inside a transaction and rolls back, leaving no test rows behind.
+
+`003_backfill.sql` migrates only deterministic legacy records. Ambiguous groups are written to `migration_exceptions`; exception records do not receive new-model authorization. The backfill can be rerun without increasing row counts because it uses stable household mappings and stable exception keys. Exactly-one-owner final enforcement is still deferred to `004_constraints.sql`.
+
+Expected fixture result after backfill:
+
+```text
+3 households
+8 active memberships
+3 login accounts
+2 open exceptions
+```
 
 ## Design Status
 

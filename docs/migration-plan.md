@@ -53,9 +53,14 @@ Objective: populate deterministic new records from legacy data.
 Database changes:
 
 - create household records for unambiguous legacy household groups
+- `003_backfill.sql` creates stable mappings from legacy login groups to new households
+- identify owners through exact unique profile-name matches
+- include owners without login IDs when deterministic
 - create profile memberships with `owner` or `member` roles where ownership is known
-- create login account records for profiles that can authenticate
-- write ambiguous cases to an exception table or migration review queue
+- create login accounts only from unambiguous login-email rows
+- quarantine ambiguous groups in `migration_exceptions`
+- leave Dana Staff Created and the ambiguous Jordan Lee group outside new-model authorization
+- remain idempotent through `migration_household_map` and stable exception keys
 
 Application behavior:
 
