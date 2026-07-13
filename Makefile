@@ -8,7 +8,7 @@ DB_USER ?= postgres
 DB_EXEC ?= docker compose exec -T postgres
 DB_EXEC_IT ?= docker compose exec postgres
 
-.PHONY: fmt test vet build run check \
+.PHONY: fmt test vet build run check api-run api-test \
 	db-up db-down db-psql db-legacy db-verify-legacy \
 	db-new-schema db-verify-new-schema db-test-new-schema-constraints \
 	db-backfill db-verify-backfill db-check-backfill-idempotency \
@@ -30,6 +30,12 @@ run:
 	go run ./cmd/api
 
 check: fmt test vet build
+
+api-run:
+	go run ./cmd/api
+
+api-test:
+	go test ./...
 
 db-up:
 	docker compose up -d

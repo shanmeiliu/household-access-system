@@ -303,6 +303,10 @@ Later steps will add:
 
 ## Running the Current Scaffold
 
+Prerequisites:
+
+- Go 1.25 or newer
+
 ```bash
 make check
 ```
@@ -409,6 +413,47 @@ make db-test-new-schema-constraints
 make db-test-final-constraints
 make db-check-backfill-idempotency
 ```
+
+## API Demo
+
+The optional Go API demo is separate from the migration design. It currently exposes only liveness and readiness checks; authorization endpoints do not exist yet.
+
+```bash
+export HTTP_ADDRESS=":8080"
+export DATABASE_URL="postgres://postgres:postgres@localhost:5432/household_access?sslmode=disable"
+make api-run
+```
+
+Optional shell-based `.env` loading:
+
+```bash
+cp .env.example .env
+set -a
+source .env
+set +a
+make api-run
+```
+
+`.env` remains ignored, and the application does not use a dotenv library. It reads process environment variables directly with `os.Getenv`.
+
+```bash
+curl http://localhost:8080/health
+curl http://localhost:8080/ready
+```
+
+Expected liveness response:
+
+```json
+{"status":"ok"}
+```
+
+Expected readiness response:
+
+```json
+{"status":"ready"}
+```
+
+`/health` checks process liveness and does not query the database. `/ready` checks PostgreSQL connectivity.
 
 ## Design Status
 
